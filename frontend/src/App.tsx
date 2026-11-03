@@ -17,6 +17,8 @@ export default function App(){
   useEffect(()=>{localStorage.setItem('collabdocs-theme',theme);document.documentElement.style.colorScheme=theme},[theme])
   const timer=useRef<ReturnType<typeof setTimeout>|null>(null)
   const pending=useRef<Record<string,unknown>>({})
+  const saveQueue=useRef<Promise<unknown>>(Promise.resolve())
+  const loaded=useRef(false)
   const activeDoc=useRef<Doc|null>(null)
   const scheduleSaveRef=useRef<(id:number,change:Record<string,unknown>)=>void>(()=>{})
   activeDoc.current=doc
@@ -25,11 +27,11 @@ export default function App(){
     if(!response.ok){ const body=await response.json().catch(()=>({})); throw new Error(body.detail || `Request failed (${response.status})`) }
     return response.status===204?null:response.json()
   },[user])
-  const refresh=useCallback(async()=>{setLoading(true);setError('');try{setLists(await request('/documents'))}catch(e){setError((e as Error).message)}finally{setLoading(false)}},[request])
+  const refresh=useCallback(async()=>{if(!loaded.current)setLoading(true);setError('');try{setLists(await request('/documents'))}catch(e){setError((e as Error).message)}finally{loaded.current=true;setLoading(false)}},[request])
   useEffect(()=>{void refresh()},[refresh])
   useEffect(()=>{setDoc(null);setSection('mine');setMobileMenu(false)},[user])
-  const save=useCallback(async(id:number,change:Record<string,unknown>)=>{setSaving('Saving…');try{const updated=await request(`/documents/${id}`,{method:'PATCH',body:JSON.stringify(change)});setDoc(current=>current?.id===id?{...current,...updated}:current);setSaving('Saved')}catch(e){setSaving('Save failed');setError((e as Error).message)}},[request])
-  const flushSave=async(id:number)=>{if(timer.current)clearTimeout(timer.current);timer.current=null;const change=pending.current;pending.current={};if(Object.keys(change).length)await save(id,change)}
+  const save=useCallback(async(id:number,change:Record<string,unknown>)=>{setSaving('Saving…');const next=saveQueue.current.catch(()=>{}).then(()=>request(`/documents/${id}`,{method:'PATCH',body:JSON.stringify(change)}));saveQueue.current=next;try{await next;if(saveQueue.current===next&&Object.keys(pending.current).length===0)setSaving('Saved')}catch(e){setSaving('Save failed');setError((e as Error).message)}},[request])
+  const flushSave=async(id:number)=>{if(timer.current)clearTimeout(timer.current);timer.current=null;const change=pending.current;pending.current={};if(Object.keys(change).length)await save(id,change);else await saveQueue.current.catch(()=>{})}
   const scheduleSave=(id:number,change:Record<string,unknown>)=>{pending.current={...pending.current,...change};if(timer.current)clearTimeout(timer.current);setSaving('Unsaved changes');timer.current=setTimeout(()=>{void flushSave(id)},650)}
   scheduleSaveRef.current=scheduleSave
   const editor=useEditor({extensions:[StarterKit,Underline],content:{type:'doc',content:[{type:'paragraph'}]},editable:false,onUpdate:({editor})=>{const current=activeDoc.current;if(current?.can_edit)scheduleSaveRef.current(current.id,{content:editor.getJSON()})}},[])
