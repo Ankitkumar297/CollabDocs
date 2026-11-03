@@ -1,1 +1,3 @@
-PENDING — deployment credentials and hosted PostgreSQL are required.
+Frontend: https://collabdocs-ankit.vercel.app
+Backend API: https://collabdocs-api-00bk.onrender.com
+GitHub: https://github.com/Ankitkumar297/CollabDocs

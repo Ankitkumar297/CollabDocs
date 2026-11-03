@@ -2,6 +2,10 @@
 
 Google Docs inspired document editor built with React, TypeScript, Vite, Tailwind, Tiptap, FastAPI, SQLAlchemy, and PostgreSQL.
 
+- Live application: https://collabdocs-ankit.vercel.app
+- API: https://collabdocs-api-00bk.onrender.com
+- Source: https://github.com/Ankitkumar297/CollabDocs
+
 ## Local setup
 
 Requires Node.js 20+, Python 3.12+, and PostgreSQL 16 (or Docker). From the repository root, start PostgreSQL with `docker compose up -d db`. Create `backend/.env` from `backend/.env.example` and set `DATABASE_URL=postgresql+psycopg://collabdocs:localpassword@localhost:5432/collabdocs`. Environment variables are read by the process; load the `.env` file in your shell or with your host's environment settings. For local smoke testing only, omit `DATABASE_URL` to use SQLite.
@@ -34,3 +38,5 @@ Import UTF-8 `.txt` and `.md` files up to 1 MB. Markdown headings up to level 3 
 ## Deployment
 
 Provision a managed PostgreSQL database. Deploy `backend/` as a Docker service on Render or Railway, with `DATABASE_URL` and `CORS_ORIGINS` set to the production frontend origin. The service starts with the included Dockerfile and exposes `/health`. Deploy `frontend/` to Vercel with Vite framework preset, build command `npm run build`, output directory `dist`, and `VITE_API_URL` set to the HTTPS backend origin. Redeploy the frontend after setting that build-time variable. Ensure the backend CORS origin exactly matches the Vercel URL. Production deployment requires service credentials and a database URL.
+
+The current deployment uses the existing Neon `collabdocs` project (`bitter-leaf-06951861`), Render service `collabdocs-api-00bk`, and Vercel project `collabdocs-ankit`. Render has `DATABASE_URL` set through its Environment page and `CORS_ORIGINS=https://collabdocs-ankit.vercel.app`; Vercel has `VITE_API_URL=https://collabdocs-api-00bk.onrender.com`. Never commit the Neon connection string. The public `/health` and `/users` endpoints, CORS preflight, production document API flows, and frontend browser flows were verified on November 3, 2026.
