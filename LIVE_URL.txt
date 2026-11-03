@@ -1,0 +1,1 @@
+PENDING — deployment credentials and hosted PostgreSQL are required.

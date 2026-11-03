@@ -1,0 +1,3 @@
+# AI workflow
+
+Codex generated the application structure, API, frontend, tests, and documentation in this workspace. It fixed a missing Vite environment type declaration found by the first production build. Local Chrome testing then exposed an editor crash on opening a document; Codex kept the Tiptap instance stable across document changes and reran the browser flow. It also supplied a favicon after confirming a console 404. Three API tests, ESLint, a production Vite build, and the local browser smoke test passed; results are in `SUBMISSION.md`. No human review, hosted PostgreSQL test, or deployment is claimed.
